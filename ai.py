@@ -40,11 +40,11 @@ class Ai:
             return (cur_min, best_move)
 
     def eval(self, board):
-        pieces = ['p', 'n', 'b', 'r', 'q', 'k']
+        pieces = [('p', 10), ('n', 30), ('b', 30), ('r', 50), ('q', 90), ('k', 1000)]
         if self.color == 1:
             pieces = list(map(str.upper, pieces))
         points = 0
         cur_pos = Counter(str(board))
         for piece in pieces:
-            points += cur_pos[piece]
+            points += cur_pos[piece[0]] * piece[1]
         return points

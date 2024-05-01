@@ -35,7 +35,7 @@ def clear_screen():
 
 
 board = chess.Board()
-ai = Ai(color=1)
+ai = Ai()
 
 # player = 1
 while not board.is_checkmate():
