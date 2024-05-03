@@ -39,14 +39,20 @@ ai = Ai()
 di = {'easy': 2, 'mid': 3}
 
 try:
-    difficulty = di[int(input("Enter the difficulty: (easy/mid)"))]
+    difficulty = di[input("Enter the difficulty(easy/mid): ").strip().lower()]
 except:
     difficulty = 3
+
+try:
+    hint = int(input("Do you want to get hints(0/1): "))
+except:
+    hint = 1
 
 print(cool_board(board))
 # player = 1
 while not board.is_checkmate():
-    print(f'Legal moves: {str(board.legal_moves).split()[3:]}\n')
+    if hint:
+        print(f'Legal moves: {str(board.legal_moves).split()[3:]}\n')
     # print(f'Best move: {(board.variation_san([chess.Move.from_uci(str(ai.eval(board, 1)[0]))]))[1:]}')
     player_move = input('Enter a move: ')
     try:
