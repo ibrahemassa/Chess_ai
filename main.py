@@ -1,5 +1,3 @@
-#TODO: difficulty choose
-
 from ai import Ai
 import chess
 import os
@@ -38,7 +36,14 @@ def clear_screen():
 
 board = chess.Board()
 ai = Ai()
+di = {'easy': 2, 'mid': 3}
 
+try:
+    difficulty = di[int(input("Enter the difficulty: (easy/mid)"))]
+except:
+    difficulty = 3
+
+print(cool_board(board))
 # player = 1
 while not board.is_checkmate():
     print(f'Legal moves: {str(board.legal_moves).split()[3:]}\n')
@@ -50,8 +55,8 @@ while not board.is_checkmate():
         print('Illegal move!\nTry again!')
         continue
     clear_screen()
-    best = ai.minimax(board, 4)
+    best = ai.minimax(board, difficulty)
     print(best)
     board.push(best[1])
     print(f'{cool_board(board)}\n')
-    # player *= -1
+
