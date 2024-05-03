@@ -6,7 +6,7 @@ class Ai:
         #-1 for black and 1 for white
         self.color = color
 
-    def minimax(self, board: chess.Board, depth, player=-1):
+    def minimax(self, board: chess.Board, depth, player=-1, alpha=float('-inf'), beta=float('inf')):
         if depth == 0 or board.is_game_over():
             return (self.eval(board), None)
         
@@ -17,12 +17,18 @@ class Ai:
             best_move = None
             for move in moves:
                 board.push(move)
-                cur = self.minimax(board, depth-1, player=1)
+                cur = self.minimax(board, depth-1, player=-player)
                 cur_score = cur[0]
+                #if the move results in check it value more points(Advantage for Ai)
+                if board.is_check():
+                    cur_score += 6
                 board.pop()
                 if cur_score > cur_max:
                     cur_max = cur_score
                     best_move = move
+                alpha = max(cur_max, alpha)
+                if beta <= alpha:
+                    break
             return (cur_max, best_move)
 
         #Player turn(minimize)
@@ -31,12 +37,18 @@ class Ai:
             best_move = None
             for move in moves:
                 board.push(move)
-                cur = self.minimax(board, depth-1, player=-1)
+                cur = self.minimax(board, depth-1, player=-player)
                 cur_score = cur[0]
+                #if the move results in check it value less points(Advantage for Player)
+                if board.is_check():
+                    cur_score -= 6
                 board.pop()
                 if cur_score < cur_min:
                     cur_min = cur_score
                     best_move = move
+                beta = min(beta, cur_min)
+                if beta <= alpha:
+                    break
             return (cur_min, best_move)
 
     def eval(self, board):

@@ -1,3 +1,5 @@
+#TODO: difficulty choose
+
 from ai import Ai
 import chess
 import os
@@ -48,7 +50,7 @@ while not board.is_checkmate():
         print('Illegal move!\nTry again!')
         continue
     clear_screen()
-    best = ai.minimax(board, 3)
+    best = ai.minimax(board, 4)
     print(best)
     board.push(best[1])
     print(f'{cool_board(board)}\n')
