@@ -1,10 +1,14 @@
 from collections import Counter
+import openings
 import chess
+import json
 
 class Ai:
     def __init__(self, color=-1):
         #-1 for black and 1 for white
         self.color = color
+        self.openings_dp = openings.load_data('./data_sets/openings.json')
+        
     
     def special(self, board, move):
         extra_score = 0
