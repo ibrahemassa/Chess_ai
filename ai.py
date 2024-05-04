@@ -22,6 +22,10 @@ class Ai:
                     extra_score += conditions[condition]
         return extra_score
 
+    def is_opening_move(self, board):
+        fen = board.fen()
+        return self.openings_dp and fen in self.openings_dp
+
     def minimax(self, board: chess.Board, depth, player=-1, alpha=float('-inf'), beta=float('inf')):
         if depth == 0 or board.is_game_over():
             return (self.eval(board), None)
@@ -38,6 +42,9 @@ class Ai:
                 #if the move results in one of the special conditions it value more points(Advantage for Ai)
                 cur_score += self.special(board, move)
                 cur_score -= self.king_safety(board)
+                if board.fullmove_number <= 6:
+                    if self.is_opening_move(board):
+                        cur_score += 20
                 board.pop()
                 if cur_score > cur_max:
                     cur_max = cur_score
@@ -58,6 +65,9 @@ class Ai:
                 #if the move results in one of the special conditions it value more points(Advantage for Player)
                 cur_score += self.special(board, move)
                 cur_score -= self.king_safety(board)
+                if board.fullmove_number <= 6:
+                    if self.is_opening_move(board):
+                        cur_score += 20
                 board.pop()
                 if cur_score < cur_min:
                     cur_min = cur_score
