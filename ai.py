@@ -12,7 +12,8 @@ class Ai:
     
     def special(self, board, move):
         extra_score = 0
-        conditions = {board.is_en_passant: 4, board.is_capture: 5, board.is_castling: 3, board.is_check: 6}
+        pieces_val = {'P': 10, 'N': 30, 'B': 30, 'R': 50, 'Q': 90, 'K': 1000}
+        conditions = {board.is_en_passant: 4, board.is_capture: 5 + pieces_val[board.piece_at(move.to_square).symbol().upper()], board.is_castling: 3, board.is_check: 6}
         for condition in conditions:
             try:
                 if condition(move):
@@ -65,7 +66,7 @@ class Ai:
                 #if the move results in one of the special conditions it value more points(Advantage for Player)
                 cur_score += self.special(board, move)
                 cur_score -= self.king_safety(board)
-                if board.fullmove_number <= 6:
+                if board.fullmove_number <= 10:
                     if self.is_opening_move(board):
                         cur_score += 20
                 board.pop()
@@ -80,7 +81,7 @@ class Ai:
     def king_safety(self, board):
         # valueOfAttacks * attackWeight[attackingPiecesCount] / 100 
         attack_weight = {0: 0, 1: 0, 2: 50, 3: 75, 4: 88, 5: 94, 6: 97, 7: 99}
-        attack_val = {'N': 20, 'B': 20, 'R': 40, 'Q': 80}
+        attack_val = {'P': 5,'N': 20, 'B': 20, 'R': 40, 'Q': 80}
         count = 0
         val = 0
         side = not board.turn
