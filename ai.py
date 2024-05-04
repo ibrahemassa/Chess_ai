@@ -8,6 +8,7 @@ class Ai:
         #-1 for black and 1 for white
         self.color = color
         self.openings_dp = openings.load_data('./data_sets/openings.json')
+        self.players = {1: chess.WHITE, -1: chess.BLACK}
         
     
     def special(self, board, move):
@@ -186,5 +187,5 @@ class Ai:
                     piece = piece.symbol().upper()
                     e = pieces_eval[piece][i][j] if self.color == 1 else pieces_eval[piece][7 - i][j]
                     points += pieces_val[piece] + pieces_eval[piece][i][j]
-        points += self.king_safety(board, chess.BLACK)
+        points += self.king_safety(board, self.players[self.color])
         return points
