@@ -32,6 +32,7 @@ class Ai:
             return (self.eval(board), None)
         
         moves = board.legal_moves
+        opening_count = 10
         #Ai turn(maximize)
         if player == self.color:
             cur_max = float('-inf')
@@ -43,7 +44,7 @@ class Ai:
                 #if the move results in one of the special conditions it value more points(Advantage for Ai)
                 cur_score += self.special(board, move)
                 cur_score -= self.king_safety(board)
-                if board.fullmove_number <= 6:
+                if board.fullmove_number <= opening_count:
                     if self.is_opening_move(board):
                         cur_score += 20
                 board.pop()
@@ -66,7 +67,7 @@ class Ai:
                 #if the move results in one of the special conditions it value more points(Advantage for Player)
                 cur_score += self.special(board, move)
                 cur_score -= self.king_safety(board)
-                if board.fullmove_number <= 10:
+                if board.fullmove_number <=  opening_count:
                     if self.is_opening_move(board):
                         cur_score += 20
                 board.pop()
