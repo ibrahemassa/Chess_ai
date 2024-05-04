@@ -54,7 +54,6 @@ def clear_screen():
 
 
 board = chess.Board()
-ai = Ai()
 di = {'easy': 2, 'mid': 3}
 
 print(title)
@@ -69,9 +68,17 @@ try:
 except:
     hint = 1
 
+try:
+    player = int(input('Do you want to play as white(1)(default) or black(-1): '))
+except:
+    player = 1
+
+ai = Ai(-player)
+
 print(f'\n{cool_board(board)}')
 # player = 1
-while not board.is_game_over():
+
+def player_move(board):
     if hint:
         print(f'Legal moves: {str(board.legal_moves).split()[3:]}\n')
     # print(f'Best move: {(board.variation_san([chess.Move.from_uci(str(ai.eval(board, 1)[0]))]))[1:]}')
@@ -80,11 +87,34 @@ while not board.is_game_over():
         board.push_san(player_move)
     except:
         print('Illegal move!\nTry again!')
-        continue
-    clear_screen()
+        player_move(board)
+
+def ai_move(board):
     best = ai.minimax(board, difficulty)
     print(best)
     board.push(best[1])
+
+
+while not board.is_game_over():
+    # if hint:
+    #     print(f'Legal moves: {str(board.legal_moves).split()[3:]}\n')
+    # print(f'Best move: {(board.variation_san([chess.Move.from_uci(str(ai.eval(board, 1)[0]))]))[1:]}')
+    # player_move = input('Enter a move: ')
+    # try:
+    #     board.push_san(player_move)
+    # except:
+    #     print('Illegal move!\nTry again!')
+    #     continue
+    if player == 1:
+        player_move(board)
+        ai_move(board)
+    else:
+        ai_move(board)
+        player_move(board)
+    clear_screen()
+    # best = ai.minimax(board, difficulty)
+    # print(best)
+    # board.push(best[1])
     print(f'{cool_board(board)}\n')
 
 results = {'1-0': 'White wins!', '0-1': 'Black wins!', '1/2-1/2': 'It is a draw!'}
