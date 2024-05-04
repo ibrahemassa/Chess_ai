@@ -33,6 +33,7 @@ class Ai:
                 cur_score = cur[0]
                 #if the move results in one of the special conditions it value more points(Advantage for Ai)
                 cur_score += self.special(board, move)
+                cur_score -= self.king_safety(board)
                 board.pop()
                 if cur_score > cur_max:
                     cur_max = cur_score
@@ -52,6 +53,7 @@ class Ai:
                 cur_score = cur[0]
                 #if the move results in one of the special conditions it value more points(Advantage for Player)
                 cur_score += self.special(board, move)
+                cur_score -= self.king_safety(board)
                 board.pop()
                 if cur_score < cur_min:
                     cur_min = cur_score
@@ -60,6 +62,27 @@ class Ai:
                 if beta <= alpha:
                     break
             return (cur_min, best_move)
+
+    def king_safety(self, board):
+        # valueOfAttacks * attackWeight[attackingPiecesCount] / 100 
+        attack_weight = {0: 0, 1: 0, 2: 50, 3: 75, 4: 88, 5: 94, 6: 97, 7: 99}
+        attack_val = {'N': 20, 'B': 20, 'R': 40, 'Q': 80}
+        count = 0
+        val = 0
+        side = not board.turn
+        king = board.king(side)
+        legal_moves = [move.to_square for move in board.generate_legal_moves(king)]
+        squares = chess.SquareSet(legal_moves) | board.attacks(king)
+        for square in squares:
+            if board.piece_at(square):
+                piece = board.piece_at(square)
+                if piece.color != side:
+                    count += 1 
+                    val += attack_val[piece.symbol().upper()]
+
+        score = val * attack_weight[count] / 100
+        return score
+
 
     def eval(self, board):
         # pieces_val = [('P', 10), ('N', 30), ('B', 30), ('R', 50), ('Q', 90), ('K', 1000)]
@@ -140,7 +163,7 @@ class Ai:
                 piece = board.piece_at(chess.square(j, i))
                 if piece and piece.symbol().upper() in pieces_val:
                     piece = piece.symbol().upper()
-                    e = pieces_eval[piece][i][j] if self.color == 1 else pieces_eval[piece][::-1][i][j]
+                    e = pieces_eval[piece][i][j] if self.color == 1 else pieces_eval[piece][7 - i][j]
                     points += pieces_val[piece] + pieces_eval[piece][i][j]
 
             # square = chess.square(file, rank)
