@@ -1,6 +1,6 @@
-# ChessAI
+# StockDolphin
 
-ChessAI is a Python-based chess engine that uses artificial intelligence algorithms to play chess against human player.
+StockDolphin is a Python-based chess engine that uses artificial intelligence algorithms to play chess against human player.
 
 ## Features
 
@@ -12,7 +12,7 @@ ChessAI is a Python-based chess engine that uses artificial intelligence algorit
 
 1. Clone the repository:
 
-    `git clone https://github.com/ibrahemassa/ChessAI.git`
+    `git clone https://github.com/ibrahemassa/StockDolphin`
 
 
 2. Install dependencies:
