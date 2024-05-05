@@ -33,7 +33,7 @@ class GameController:
             board.push_san(move)
         except:
             print('Illegal move!\nTry again!')
-            player_move(board)
+            self.player_move(board)
 
     def ai_move(self, board):
         best = self.ai_player.minimax(board, self.difficulty)
