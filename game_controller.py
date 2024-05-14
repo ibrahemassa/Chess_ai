@@ -1,8 +1,14 @@
+import threading
+import random
 import chess
+import copy
 
 class GameController:
     def __init__(self, ai_player):
         self.ai_player = ai_player
+
+        self.best_moves_dict = {}
+        self.stop_flag = threading.Event()
         
         di = {'easy': 2, 'mid': 3}
 
@@ -24,9 +30,29 @@ class GameController:
         self.ai_player.color = -self.player
 
 
+    def temp_ai(self, board, moves):
+        self.best_moves_dict = {}
+        dummy_board = copy.deepcopy(board)
+        list_moves = list(moves)
+        random.shuffle(list_moves)
+        for move in list_moves:
+            if self.stop_flag.is_set():
+                break
+            try:
+                dummy_board.push(move)
+                self.best_moves_dict[dummy_board.fen()] = self.ai_player.minimax(dummy_board, self.difficulty)
+                dummy_board.pop()
+            except:
+                continue
+
     def player_move(self, board):
+        self.stop_flag.clear()
+        legal_player_moves = board.legal_moves
+        ai_thread = threading.Thread(target=self.temp_ai, args=(board, legal_player_moves))
+        if not ai_thread.is_alive():
+            ai_thread.start()
         if self.hint:
-            print(f'Legal moves: {str(board.legal_moves).split()[3:]}\n')
+            print(f'Legal moves: {str(legal_player_moves).split()[3:]}\n')
         # print(f'Best move: {(board.variation_san([chess.Move.from_uci(str(ai.eval(board, 1)[0]))]))[1:]}')
         move = input('Enter a move: ')
         try:
@@ -34,9 +60,14 @@ class GameController:
         except:
             print('Illegal move!\nTry again!')
             self.player_move(board)
+        if ai_thread.is_alive():
+            self.stop_flag.set()
 
     def ai_move(self, board):
-        best = self.ai_player.minimax(board, self.difficulty)
+        if board.fen() in self.best_moves_dict:
+            best = self.best_moves_dict[board.fen()]
+        else:
+            best = self.ai_player.minimax(board, self.difficulty)
         print(best)
         board.push(best[1])
 
