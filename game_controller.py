@@ -1,3 +1,4 @@
+import multiprocessing
 import threading
 import random
 import chess
@@ -7,9 +8,10 @@ class GameController:
     def __init__(self, ai_player):
         self.ai_player = ai_player
 
-        self.threads = []
-        self.best_moves_dict = {}
-        self.stop_flag = threading.Event()
+        self.processes = []
+        self.manager = multiprocessing.Manager()
+        self.best_moves_dict = self.manager.dict()
+        self.lock = threading.Lock()
         
         di = {'easy': 2, 'mid': 3}
 
@@ -35,48 +37,46 @@ class GameController:
         dummy_board = copy.deepcopy(board)
         try:
             dummy_board.push(move)
-            self.best_moves_dict[dummy_board.fen()] = self.ai_player.minimax(dummy_board, self.difficulty)
-            print('Shit is working')
+            best_move = self.ai_player.minimax(dummy_board, self.difficulty)
+            with self.lock:
+                self.best_moves_dict[dummy_board.fen()] = best_move
             dummy_board.pop()
         except Exception as e:
-            print(f'Error in thread: {e}')
+            print(f'Error in process: {e}')
 
 
-    def threads_controller(self, board, moves):
-        self.best_moves_dict = {}
+    def processes_controller(self, board, moves):
         for move in moves:
-            if self.stop_flag.is_set():
-                break
-            thread = threading.Thread(target=self.temp_ai, args=(board, move))
-            self.threads.append(thread)
-            thread.start()
+            process = multiprocessing.Process(target=self.temp_ai, args=(board, move))
+            self.processes.append(process)
+            process.start()
         
-        for thread in self.threads:
-            thread.join() 
-
 
     def player_move(self, board):
-        self.stop_flag.clear()
         legal_player_moves = board.legal_moves
-        if not any(thread.is_alive() for thread in self.threads):
-            controller = threading.Thread(target=self.threads_controller, args=(board, legal_player_moves))
+        if not any(process.is_alive() for process in self.processes):
+            controller =multiprocessing.Process(target=self.processes_controller, args=(board, legal_player_moves))
             controller.start()
-
+        
         if self.hint:
             print(f'Legal moves: {str(legal_player_moves).split()[3:]}\n')
+        
         # print(f'Best move: {(board.variation_san([chess.Move.from_uci(str(ai.eval(board, 1)[0]))]))[1:]}')
         move = input('Enter a move: ')
+        
         try:
             board.push_san(move)
         except:
             print('Illegal move!\nTry again!')
             self.player_move(board)
             return
-        self.stop_flag.set()
-        for thread in self.threads:
-            if thread.is_alive():
-                thread.join()
-        self.threads = []
+
+        for process in self.processes:
+                process.terminate()
+        controller.terminate()
+        
+        self.processes = []
+        self.best_moves_dict.clear()
 
     def ai_move(self, board):
         if board.fen() in self.best_moves_dict:
