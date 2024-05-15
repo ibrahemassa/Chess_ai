@@ -7,6 +7,7 @@ class GameController:
     def __init__(self, ai_player):
         self.ai_player = ai_player
 
+        self.threads = []
         self.best_moves_dict = {}
         self.stop_flag = threading.Event()
         
@@ -30,27 +31,37 @@ class GameController:
         self.ai_player.color = -self.player
 
 
-    def temp_ai(self, board, moves):
-        self.best_moves_dict = {}
+    def temp_ai(self,board , move):
         dummy_board = copy.deepcopy(board)
-        list_moves = list(moves)
-        random.shuffle(list_moves)
-        for move in list_moves:
+        try:
+            dummy_board.push(move)
+            self.best_moves_dict[dummy_board.fen()] = self.ai_player.minimax(dummy_board, self.difficulty)
+            print('Shit is working')
+            dummy_board.pop()
+        except Exception as e:
+            print(f'Error in thread: {e}')
+
+
+    def threads_controller(self, board, moves):
+        self.best_moves_dict = {}
+        for move in moves:
             if self.stop_flag.is_set():
                 break
-            try:
-                dummy_board.push(move)
-                self.best_moves_dict[dummy_board.fen()] = self.ai_player.minimax(dummy_board, self.difficulty)
-                dummy_board.pop()
-            except:
-                continue
+            thread = threading.Thread(target=self.temp_ai, args=(board, move))
+            self.threads.append(thread)
+            thread.start()
+        
+        for thread in self.threads:
+            thread.join() 
+
 
     def player_move(self, board):
         self.stop_flag.clear()
         legal_player_moves = board.legal_moves
-        ai_thread = threading.Thread(target=self.temp_ai, args=(board, legal_player_moves))
-        if not ai_thread.is_alive():
-            ai_thread.start()
+        if not any(thread.is_alive() for thread in self.threads):
+            controller = threading.Thread(target=self.threads_controller, args=(board, legal_player_moves))
+            controller.start()
+
         if self.hint:
             print(f'Legal moves: {str(legal_player_moves).split()[3:]}\n')
         # print(f'Best move: {(board.variation_san([chess.Move.from_uci(str(ai.eval(board, 1)[0]))]))[1:]}')
@@ -60,8 +71,12 @@ class GameController:
         except:
             print('Illegal move!\nTry again!')
             self.player_move(board)
-        if ai_thread.is_alive():
-            self.stop_flag.set()
+            return
+        self.stop_flag.set()
+        for thread in self.threads:
+            if thread.is_alive():
+                thread.join()
+        self.threads = []
 
     def ai_move(self, board):
         if board.fen() in self.best_moves_dict:
