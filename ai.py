@@ -3,13 +3,31 @@ import chess
 import json
 
 class Ai:
-    def __init__(self, color=-1):
+    def __init__(self, moves_cache, color=-1):
         #-1 for black and 1 for white
         self.color = color
+
+        self.opening_count = 10
         self.openings_dp = openings.load_data('./data_sets/openings.json')
+
         self.players = {1: chess.WHITE, -1: chess.BLACK}
+
+        self.moves_cache = moves_cache
+        # self.positions_count = positions_count
         
     
+
+    # def track_pos(self, board):
+    #     fen = board.fen()
+    #     if fen in self.positions_count:
+    #         self.positions_count[board.fen()] += 1
+    #     else:
+    #         self.positions_count[board.fen()] = 1
+    #
+    # def repeated(self, board):
+    #     return self.positions_count.get(board.fen(), 0) >= 3
+
+
     def special(self, board, move):
         extra_score = 0
         conditions = {board.is_en_passant: 4, board.is_capture: 5 + self.get_values()[board.piece_at(move.to_square).symbol().upper()], board.is_castling: 3, board.is_check: 6}
@@ -22,38 +40,61 @@ class Ai:
                     extra_score += conditions[condition]
         return extra_score
 
-    def opening_score(self, board):
+    def opening_score(self, board, move):
+        if board.fullmove_number <= self.opening_count:
+            if board.piece_at(move.to_square).piece_type == chess.KING:
+                return -1000000
         fen = board.fen()
-        return self.openings_dp[fen]/100 if self.openings_dp and fen in self.openings_dp else 0
+        if str(fen)[4] != 'k':
+            return -1000000
+        return 20 + (self.openings_dp[fen]/100) if (self.openings_dp and fen in self.openings_dp) else 0
+
+    def calc_score(self, board, move):
+        if board.fullmove_number <= self.opening_count and board.piece_at(move.to_square).piece_type == chess.KING:
+            return -1000000
+        cur_score = 0
+        cur_score += self.special(board, move)
+        cur_score -= self.king_safety(board)
+        cur_score += self.opening_score(board, move)
+        return cur_score
+
 
     def minimax(self, board: chess.Board, depth, player=-1, alpha=float('-inf'), beta=float('inf')):
         if depth == 0 or board.is_game_over():
+        #or self.repeated(board):
             return (self.eval(board), None)
         
-        moves = board.legal_moves
-        opening_count = 10
+        if board.fen() in self.moves_cache:
+            return self.moves_cache[board.fen()]
+        
+        moves = list(board.legal_moves)
+        moves.sort(key=lambda move: board.is_capture(move), reverse=True)
         #Ai turn(maximize)
         if player == self.color:
             cur_max = float('-inf')
             best_move = None
             for move in moves:
                 board.push(move)
+                # self.track_pos(board)
                 cur = self.minimax(board, depth-1, player=-player)
                 cur_score = cur[0]
                 #if the move results in one of the special conditions it value more points(Advantage for Ai)
-                cur_score += self.special(board, move)
-                cur_score -= self.king_safety(board)
-                if board.fullmove_number <= opening_count and board.piece_at(move.to_square).piece_type != chess.KING:
-                    extra_opening = self.opening_score(board)
-                    if extra_opening:
-                        cur_score += (20 + extra_opening)
+                cur_score += self.calc_score(board, move)
+                # if board.fullmove_number <= opening_count:
+                #     if board.piece_at(move.to_square).piece_type == chess.KING:
+                #         cur_score -= 1000
+                #     else:
+                #         extra_opening = self.opening_score(board)
+                #         if extra_opening:
+                #             cur_score += (20 + extra_opening)
                 board.pop()
                 if cur_score > cur_max:
                     cur_max = cur_score
                     best_move = move
-                alpha = max(cur_max, alpha)
+                alpha = max(cur_score, alpha)
                 if beta <= alpha:
                     break
+            self.moves_cache[board.fen()] = (cur_max, best_move)
             return (cur_max, best_move)
 
         #Player turn(minimize)
@@ -62,20 +103,23 @@ class Ai:
             best_move = None
             for move in moves:
                 board.push(move)
+                # self.track_pos(board)
                 cur = self.minimax(board, depth-1, player=-player)
                 cur_score = cur[0]
                 #if the move results in one of the special conditions it value more points(Advantage for Player)
-                cur_score += self.special(board, move)
-                cur_score -= self.king_safety(board)
-                if board.fullmove_number <=  opening_count and board.piece_at(move.to_square).piece_type != chess.KING:
-                    extra_opening = self.opening_score(board)
-                    if extra_opening:
-                        cur_score += (20 + extra_opening)
+                cur_score += self.calc_score(board, move)
+                # if board.fullmove_number <= opening_count:
+                #     if board.piece_at(move.to_square).piece_type == chess.KING:
+                #         cur_score -= 1000
+                #     else:
+                #         extra_opening = self.opening_score(board)
+                #         if extra_opening:
+                #             cur_score += (20 + extra_opening)
                 board.pop()
                 if cur_score < cur_min:
                     cur_min = cur_score
                     best_move = move
-                beta = min(beta, cur_min)
+                beta = min(beta, cur_score)
                 if beta <= alpha:
                     break
             return (cur_min, best_move)
@@ -189,5 +233,10 @@ class Ai:
                     piece = piece.symbol().upper()
                     e = pieces_eval[piece][i][j] if self.color == 1 else pieces_eval[piece][7 - i][j]
                     points += pieces_val[piece] + pieces_eval[piece][i][j]
-        points += self.king_safety(board, self.players[self.color])
+                    # if self.repeated(board):
+                        # points -= 100
+        points -= self.king_safety(board, self.players[self.color])
         return points
+
+    def get_move(self, board, depth=3):
+        return self.minimax(board, depth, player=self.color)[1]

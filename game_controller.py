@@ -1,17 +1,21 @@
-import multiprocessing
+import multiprocessing  
+from ai import Ai
 import threading
 import random
 import chess
 import copy
 
 class GameController:
-    def __init__(self, ai_player):
-        self.ai_player = ai_player
+    def __init__(self):
 
         self.processes = []
         self.manager = multiprocessing.Manager()
         self.best_moves_dict = self.manager.dict()
+        self.moves_cache = self.manager.dict()
+        self.positions_count = self.manager.dict()
         self.lock = threading.Lock()
+        
+        self.ai_player = Ai(moves_cache=self.moves_cache) 
         
         di = {'easy': 2, 'mid': 3}
 
@@ -37,7 +41,7 @@ class GameController:
         dummy_board = copy.deepcopy(board)
         try:
             dummy_board.push(move)
-            best_move = self.ai_player.minimax(dummy_board, self.difficulty)
+            best_move = self.ai_player.get_move(dummy_board, self.difficulty)
             with self.lock:
                 self.best_moves_dict[dummy_board.fen()] = best_move
             dummy_board.pop()
@@ -82,9 +86,9 @@ class GameController:
         if board.fen() in self.best_moves_dict:
             best = self.best_moves_dict[board.fen()]
         else:
-            best = self.ai_player.minimax(board, self.difficulty)
+            best = self.ai_player.get_move(board, self.difficulty)
         print(best)
-        board.push(best[1])
+        board.push(best)
 
 
     def cool_board(self, board):
