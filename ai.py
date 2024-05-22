@@ -17,26 +17,6 @@ class Ai:
         
     
 
-    # def track_pos(self, board):
-    #     fen = board.fen()
-    #     if fen in self.positions_count:
-    #         self.positions_count[board.fen()] += 1
-    #     else:
-    #         self.positions_count[board.fen()] = 1
-    #
-    # def repeated(self, board):
-    #     return self.positions_count.get(board.fen(), 0) >= 3
-    
-    # def is_fork(self, board, move):
-        # piece = board.piece_at(move.to_square)
-        # if piece and piece.piece_type == chess.KNIGHT:
-        #     attacked_squ = list(board.attacks(move.to_square))
-        #     attacked_pieces = [board.piece_at(square) for square in attacked_squ]
-        #     if sum(1 for p in attacked_pieces if p and p.piece_type in [chess.KING, chess.QUEEN, chess.ROOK]) >= 2:
-        #         return True
-        # return False
-
-
     def special(self, board, move):
         extra_score = 0
         conditions = {board.is_en_passant: 4,
@@ -93,18 +73,10 @@ class Ai:
                 board.push(move)
                 if board.is_fivefold_repetition():
                     continue
-                # self.track_pos(board)
                 cur = self.minimax(board, depth-1, player=-player)
                 cur_score = cur[0]
                 #if the move results in one of the special conditions it value more points(Advantage for Ai)
                 cur_score += self.calc_score(board, move)
-                # if board.fullmove_number <= opening_count:
-                #     if board.piece_at(move.to_square).piece_type == chess.KING:
-                #         cur_score -= 1000
-                #     else:
-                #         extra_opening = self.opening_score(board)
-                #         if extra_opening:
-                #             cur_score += (20 + extra_opening)
                 board.pop()
                 if cur_score > cur_max:
                     cur_max = cur_score
@@ -123,18 +95,10 @@ class Ai:
                 board.push(move)
                 if board.is_fivefold_repetition():
                     continue
-                # self.track_pos(board)
                 cur = self.minimax(board, depth-1, player=-player)
                 cur_score = cur[0]
                 #if the move results in one of the special conditions it value more points(Advantage for Player)
                 cur_score += self.calc_score(board, move)
-                # if board.fullmove_number <= opening_count:
-                #     if board.piece_at(move.to_square).piece_type == chess.KING:
-                #         cur_score -= 1000
-                #     else:
-                #         extra_opening = self.opening_score(board)
-                #         if extra_opening:
-                #             cur_score += (20 + extra_opening)
                 board.pop()
                 if cur_score < cur_min:
                     cur_min = cur_score
@@ -260,3 +224,26 @@ class Ai:
 
     def get_move(self, board, depth=3):
         return self.minimax(board, depth, player=self.color)[1]
+  
+
+###################################################
+# def track_pos(self, board):
+    #     fen = board.fen()
+    #     if fen in self.positions_count:
+    #         self.positions_count[board.fen()] += 1
+    #     else:
+    #         self.positions_count[board.fen()] = 1
+    #
+    # def repeated(self, board):
+    #     return self.positions_count.get(board.fen(), 0) >= 3
+    
+    # def is_fork(self, board, move):
+        # piece = board.piece_at(move.to_square)
+        # if piece and piece.piece_type == chess.KNIGHT:
+        #     attacked_squ = list(board.attacks(move.to_square))
+        #     attacked_pieces = [board.piece_at(square) for square in attacked_squ]
+        #     if sum(1 for p in attacked_pieces if p and p.piece_type in [chess.KING, chess.QUEEN, chess.ROOK]) >= 2:
+        #         return True
+        # return False
+
+
