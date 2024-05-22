@@ -42,7 +42,6 @@ while not board.is_game_over():
         game_controller.print_board(board)
         game_controller.player_move(board)
     game_controller.print_board(board)
-    print(board.fen())
 
 results = {'1-0': 'White wins!', '0-1': 'Black wins!', '1/2-1/2': 'It is a draw!'}
 print(results[board.result()])

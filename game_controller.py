@@ -58,6 +58,8 @@ class GameController:
 
     def player_move(self, board):
         legal_player_moves = board.legal_moves
+        if board.is_check():
+            print("CHECK!!!!")
         if not any(process.is_alive() for process in self.processes):
             controller =multiprocessing.Process(target=self.processes_controller, args=(board, legal_player_moves))
             controller.start()
@@ -87,7 +89,7 @@ class GameController:
             best = self.best_moves_dict[board.fen()]
         else:
             best = self.ai_player.get_move(board, self.difficulty)
-        print(best)
+        # print(best)
         board.push(best)
 
 

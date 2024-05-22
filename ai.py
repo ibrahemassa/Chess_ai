@@ -30,7 +30,12 @@ class Ai:
 
     def special(self, board, move):
         extra_score = 0
-        conditions = {board.is_en_passant: 4, board.is_capture: 5 + self.get_values()[board.piece_at(move.to_square).symbol().upper()], board.is_castling: 3, board.is_check: 6}
+        conditions = {board.is_en_passant: 4,
+                      board.is_capture: 5 + self.get_values()[board.piece_at(move.to_square).symbol().upper()],
+                      board.is_castling: 3,
+                      board.is_check: 6,
+                      board.is_checkmate: 1000,
+                      }
         for condition in conditions:
             try:
                 if condition(move):
@@ -75,6 +80,8 @@ class Ai:
             best_move = None
             for move in moves:
                 board.push(move)
+                if board.is_fivefold_repetition():
+                    continue
                 # self.track_pos(board)
                 cur = self.minimax(board, depth-1, player=-player)
                 cur_score = cur[0]
@@ -103,6 +110,8 @@ class Ai:
             best_move = None
             for move in moves:
                 board.push(move)
+                if board.is_fivefold_repetition():
+                    continue
                 # self.track_pos(board)
                 cur = self.minimax(board, depth-1, player=-player)
                 cur_score = cur[0]
