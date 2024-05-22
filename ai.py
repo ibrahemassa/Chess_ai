@@ -26,6 +26,15 @@ class Ai:
     #
     # def repeated(self, board):
     #     return self.positions_count.get(board.fen(), 0) >= 3
+    
+    # def is_fork(self, board, move):
+        # piece = board.piece_at(move.to_square)
+        # if piece and piece.piece_type == chess.KNIGHT:
+        #     attacked_squ = list(board.attacks(move.to_square))
+        #     attacked_pieces = [board.piece_at(square) for square in attacked_squ]
+        #     if sum(1 for p in attacked_pieces if p and p.piece_type in [chess.KING, chess.QUEEN, chess.ROOK]) >= 2:
+        #         return True
+        # return False
 
 
     def special(self, board, move):
@@ -61,6 +70,8 @@ class Ai:
         cur_score += self.special(board, move)
         cur_score -= self.king_safety(board)
         cur_score += self.opening_score(board, move)
+        # if self.is_fork(board, move):
+            # cur_score += 10
         return cur_score
 
 
