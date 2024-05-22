@@ -12,7 +12,7 @@ StockDolphin is a Python-based chess engine that uses artificial intelligence al
 
 1. Clone the repository:
 
-    `git clone https://github.com/ibrahemassa/StockDolphin`
+    `git clone https://github.com/ibrahemassa/StockDolphin && cd StockDolphin`
 
 
 2. Install dependencies:
