@@ -31,7 +31,7 @@ player = game_controller.player
 
 game_controller.print_board(board)
 
-while not board.is_game_over():
+while not board.is_game_over() and not board.is_checkmate():
     if player == 1:
         game_controller.player_move(board)
         game_controller.ai_move(board)

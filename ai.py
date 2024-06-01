@@ -36,7 +36,7 @@ class Ai:
 
     def opening_score(self, board, move):
         if board.fullmove_number <= self.opening_count:
-            if board.piece_at(move.to_square).piece_type == chess.KING:
+            if board.piece_at(move.to_square).piece_type == chess.KING or board.piece_at(move.to_square).piece_type == chess.ROOK:
                 return -1000000
         fen = board.fen()
         if str(fen)[4] != 'k':
@@ -197,19 +197,10 @@ class Ai:
             }
 
     def eval(self, board):
-        # pieces_val = [('P', 10), ('N', 30), ('B', 30), ('R', 50), ('Q', 90), ('K', 1000)]
         pieces_val = self.get_values()
         pieces_eval = self.get_pos_values()
         
-        # if self.color == -1:
-            # pieces_val = list(map(str.lower, pieces_val))
-            # pieces_eval = list(map(str.lower, pieces_eval))
-            # pieces_val = {key.lower(): value for key, value in pieces_val.items()}
-            # pieces_eval = {key.lower(): value[::-1] for key, value in pieces_eval.items()}
         points = 0
-        # cur_pos = Counter(str(board))
-        # for piece in pieces_val:
-            # points += cur_pos[piece[0]] * piece[1]
         for i in range(8):
             for j in range(8):
                 piece = board.piece_at(chess.square(j, i))

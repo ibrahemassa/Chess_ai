@@ -4,9 +4,14 @@ import threading
 import random
 import chess
 import copy
+import os
 
 class GameController:
     def __init__(self):
+        if os.name == 'nt':
+            multiprocessing.set_start_method('spawn')
+        else:
+            multiprocessing.set_start_method('fork')
 
         self.processes = []
         self.manager = multiprocessing.Manager()
